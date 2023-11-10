@@ -70,29 +70,35 @@ router.get('/:id', getProduct, (req, res) => {
   res.json(res.product);
 });
 
-// PATCH (update) a product by ID
-router.patch('/:id', getProduct, async (req, res) => {
+// PUT (update) a product by ID
+router.put('/:id', upload.array('images'), getProduct, async (req, res) => {
+  // Update fields that are provided in the request
   if (req.body.name != null) {
     res.product.name = req.body.name;
   }
-  // Add other fields updates as needed
+  if (req.body.sku != null) {
+    res.product.sku = req.body.sku;
+  }
+  if (req.body.quantity != null) {
+    res.product.quantity = req.body.quantity;
+  }
+  if (req.body.description != null) {
+    res.product.description = req.body.description;
+  }
+  if (req.files) {
+    res.product.images = req.files.map(file => file.path);
+  }
+  // If you're allowing image updates, you'll need to handle file uploads here
+
   try {
     const updatedProduct = await res.product.save();
-    res.json(updatedProduct);
+    res.json({ message: 'Product updated successfully!', product: updatedProduct });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to update product.', error: error.message });
   }
 });
 
-// DELETE a product
-// router.delete('/:id', getProduct, async (req, res) => {
-//   try {
-//     await res.product.remove();
-//     res.json({ message: 'Deleted product' });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+
 
 // DELETE a product
 router.delete('/:id', async (req, res) => {
