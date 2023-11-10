@@ -45,10 +45,13 @@ router.post('/', upload.array('images'), async (req, res) => {
   });
 
   try {
+    // Save the new product to the database
     const newProduct = await product.save();
-    res.status(201).json(newProduct);
+    res.status(201).json({ message: 'New product added successfully!', product: newProduct });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    // If saving to the database fails
+    console.error('Failed to add product:', error);
+    res.status(400).json({ message: 'Failed to add product.', error: error.message });
   }
 });
 
@@ -82,13 +85,27 @@ router.patch('/:id', getProduct, async (req, res) => {
 });
 
 // DELETE a product
-router.delete('/:id', getProduct, async (req, res) => {
+// router.delete('/:id', getProduct, async (req, res) => {
+//   try {
+//     await res.product.remove();
+//     res.json({ message: 'Deleted product' });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+
+// DELETE a product
+router.delete('/:id', async (req, res) => {
   try {
-    await res.product.remove();
+    const result = await Product.findByIdAndDelete(req.params.id);
+    if (!result) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
     res.json({ message: 'Deleted product' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
 
 module.exports = router;

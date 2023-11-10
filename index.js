@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path'); // Add this to use the path module
 const productsRouter = require('./routes/products');
 const helmet = require('helmet');
 const app = express();
@@ -14,6 +15,10 @@ app.use(express.json()); // Parses incoming JSON requests and puts the parsed da
 
 // Use Helmet for HTTP security
 app.use(helmet());
+
+// This line should come after applying the CORS middleware globally
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Basic route for home page
 app.get('/', (req, res) => {
