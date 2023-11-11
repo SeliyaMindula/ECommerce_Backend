@@ -31,6 +31,36 @@ async function getProduct(req, res, next) {
   next();
 }
 
+// Place the search route before any 'get by id' routes
+router.get('/search', async (req, res) => {
+  try {
+    const searchTerm = req.query.term;
+    const regex = new RegExp(searchTerm, 'i');
+    const products = await Product.find({
+      $or: [
+        { name: { $regex: regex } },
+        { description: { $regex: regex } },
+      ],
+    });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Other routes should come after the search route
+router.get('/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // POST a new product with image upload
 router.post('/', upload.array('images'), async (req, res) => {
   const { sku, quantity, name, description } = req.body;
@@ -63,11 +93,6 @@ router.get('/', async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-});
-
-// GET a single product by ID
-router.get('/:id', getProduct, (req, res) => {
-  res.json(res.product);
 });
 
 // PUT (update) a product by ID
@@ -112,6 +137,7 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 
 
 module.exports = router;
